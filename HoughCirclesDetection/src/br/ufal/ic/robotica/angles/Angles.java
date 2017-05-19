@@ -71,7 +71,7 @@ public class Angles {
 										Math.atan2(centers[i].y - centers[j].y, centers[i].x - centers[j].x)))),
 								centers[j], 3, 1.0, new Scalar(141, 11, 234), 2);
 					}*/
-				}
+				}System.out.println("robot: "+ robot[2]);System.out.println("dest "+destination[2]);
 			}
 		}
 	}
@@ -105,9 +105,20 @@ public class Angles {
 		}
 		return distance;
 	}
+	
+	/**
+	 * [0] x of the center ,
+	 * [1] y of the center ,
+	 * [2] angle
+	 * */
 	public double[] getRobot() {
 		return robot;
 	}
+	/**
+	 * [0] x of the center ,
+	 * [1] y of the center ,
+	 * [2] angle
+	 * */
 	public double[] getDestination() {
 		return destination;
 	}

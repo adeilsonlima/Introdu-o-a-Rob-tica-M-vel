@@ -3,6 +3,7 @@ package br.ufal.ic.robotica.videocapture;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.io.IOException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -18,6 +19,7 @@ import org.opencv.videoio.VideoCapture;
 
 import br.ufal.ic.robotica.angles.Angles;
 import br.ufal.ic.robotica.robot.MoveRobot;
+import lejos.remote.ev3.RemoteRequestEV3;
 
 public class FindPath {
 	static {
@@ -28,6 +30,7 @@ public class FindPath {
 	private JLabel imageLabel;
 	private Mat imgFrame;
 	private HoughCirclesDetection circles;
+	private RemoteRequestEV3 ev3;
 
 	public static void main(String[] args) {
 		FindPath app = new FindPath();
@@ -50,8 +53,14 @@ public class FindPath {
 	private void runMainLoop(String[] args) {
 		imgFrame = new Mat();
 		circles = new HoughCirclesDetection();
+		try {
+			ev3 = new RemoteRequestEV3("10.0.1.1");
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		MoveRobot moveRobot = new MoveRobot(ev3);
 		Angles angles = new Angles();
-		MoveRobot moveRobot = new MoveRobot();
+		
 		Image tempImage;
 		VideoCapture capture = new VideoCapture("/home/adeilson/Downloads/programaOpencv/robotlocalization.avi");
 
@@ -68,7 +77,7 @@ public class FindPath {
 					imageLabel.setIcon(imageIcon);
 					frame.pack(); // this will resize the window to fit the
 									// image
-					moveRobot.move(robot, destination);
+				//	moveRobot.move(robot, destination);
 				} else {
 					System.out.println(" -- Frame not captured -- Break!");
 					break;
@@ -82,6 +91,7 @@ public class FindPath {
 			}
 		} else {
 			System.out.println("Couldn't open capture.");
+			moveRobot.stop();
 		}
 	}
 	
