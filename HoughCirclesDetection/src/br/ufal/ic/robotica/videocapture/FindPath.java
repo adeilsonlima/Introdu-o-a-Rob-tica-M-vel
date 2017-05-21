@@ -53,12 +53,13 @@ public class FindPath {
 	private void runMainLoop(String[] args) {
 		imgFrame = new Mat();
 		circles = new HoughCirclesDetection();
-		try {
+	/*	try {
 			ev3 = new RemoteRequestEV3("10.0.1.1");
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		MoveRobot moveRobot = new MoveRobot(ev3);
+		MoveRobot moveRobot = new MoveRobot(ev3);*/
+		MoveRobot moveRobot = new MoveRobot();
 		Angles angles = new Angles();
 		
 		Image tempImage;
@@ -77,21 +78,23 @@ public class FindPath {
 					imageLabel.setIcon(imageIcon);
 					frame.pack(); // this will resize the window to fit the
 									// image
-				//	moveRobot.move(robot, destination);
+					if(robot!=null){
+						moveRobot.move(robot, destination);
+					}
 				} else {
 					System.out.println(" -- Frame not captured -- Break!");
 					break;
 				}
 
 				try {
-					Thread.sleep(20);
+					Thread.sleep(70);//20
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		} else {
 			System.out.println("Couldn't open capture.");
-			moveRobot.stop();
+		//	moveRobot.stop();
 		}
 	}
 	

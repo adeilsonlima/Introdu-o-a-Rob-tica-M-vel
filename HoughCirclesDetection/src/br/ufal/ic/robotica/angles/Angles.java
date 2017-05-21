@@ -8,13 +8,11 @@ import org.opencv.imgproc.Imgproc;
 import br.ufal.ic.robotica.cluster.MyColors;
 
 public class Angles {
-	private double[] robot;//position, orientation
+	private double[] robot;// position, orientation
 	private double[] destination;
-	
-	public void calculaAngulos(Point[] centers, Mat imgFrame){
 
-		robot = new double[3];
-		destination = new double[3];
+	public void calculaAngulos(Point[] centers, Mat imgFrame) {
+		
 		Mat imgTemp = new Mat();
 		imgFrame.copyTo(imgTemp);
 		Imgproc.cvtColor(imgTemp, imgTemp, Imgproc.COLOR_BGR2HSV);
@@ -24,75 +22,68 @@ public class Angles {
 				// Marcação detectada
 				if (distance < 22 && distance > 16) {
 					Imgproc.line(imgFrame, centers[i], centers[j], new Scalar(0, 0, 255), 2);
-					
-					double[] intensity1 = imgTemp.get((int) centers[i].y, (int) centers[i].x);
-					double[] intensity2 = imgTemp.get((int) centers[j].y, (int) centers[j].x);
-					int cor1 = color(intensity1);
-					int cor2 = color(intensity2);
-					
-					if(cor1 == MyColors.RED && cor2 == MyColors.GREEN){
-						robot[0] = centers[i].x;
-						robot[1] = centers[i].y;
-						robot[2] = Math.toDegrees(Math.atan2(centers[i].y-centers[j].y, centers[i].x-centers[j].x));
-					}else if(cor1 == MyColors.GREEN && cor2 == MyColors.RED){
-						robot[0] = centers[j].x;
-						robot[1] = centers[j].y;
-						robot[2] = Math.toDegrees(Math.atan2(centers[j].y-centers[i].y, centers[j].x-centers[i].x));
-					}else if(cor1 == MyColors.BLUE && cor2 == MyColors.BLACK){
-						destination[0] = centers[i].x;
-						destination[1] = centers[i].y;
-						destination[2] = Math.toDegrees(Math.atan2(centers[i].y-centers[j].y, centers[i].x-centers[j].x));
-					}else if(cor1 == MyColors.BLACK && cor2 == MyColors.BLUE){
-						destination[0] = centers[j].x;
-						destination[1] = centers[j].y;
-						destination[2] = Math.toDegrees(Math.atan2(centers[j].y-centers[i].y, centers[j].x-centers[i].x));
-					}
-					
-			
-					 
-					 
 
-				
-					 
-					/*if (intensityA[2] > 120) {// vermelho
-						// System.out.println("theta: " +
-						// Math.toDegrees(Math.atan2(centers[i].y-centers[j].y,
-						// centers[i].x-centers[j].x)));
-						Imgproc.putText(imgFrame,
-								String.valueOf(Math.round(Math.toDegrees(
-										Math.atan2(centers[j].y - centers[i].y, centers[j].x - centers[i].x)))),
-								centers[i], 3, 1.0, new Scalar(141, 11, 234), 2);
-					} else {
-						// System.out.println("theta: " +
-						// Math.toDegrees(Math.atan2(centers[j].y-centers[i].y,
-						// centers[j].x-centers[i].x)));
-						Imgproc.putText(imgFrame,
-								String.valueOf(Math.round(Math.toDegrees(
-										Math.atan2(centers[i].y - centers[j].y, centers[i].x - centers[j].x)))),
-								centers[j], 3, 1.0, new Scalar(141, 11, 234), 2);
-					}*/
-				}System.out.println("robot: "+ robot[2]);System.out.println("dest "+destination[2]);
+					double[] intensityI = imgTemp.get((int) centers[i].y, (int) centers[i].x);
+					double[] intensityJ = imgTemp.get((int) centers[j].y, (int) centers[j].x);
+					int corI = color(intensityI);
+					int corJ = color(intensityJ);
+
+					if (corI == MyColors.RED && corJ == MyColors.GREEN) {
+						robot = new double[5];
+						robot[0] = centers[i].x;
+						robot[1] = imgTemp.rows() + 1 - centers[i].y;
+						robot[2] = centers[j].x;
+						robot[3] = imgTemp.rows() + 1 - centers[j].y;
+						robot[4] = Math.toDegrees(Math.atan2(robot[1] - robot[3], robot[0] - robot[2]));
+						System.out.println("angle robot: " + robot[4]);
+						System.out.println("R(" + robot[0] + "," + robot[1] + "),G(" + robot[2] + "," + robot[3] + ")");
+					} else if (corI == MyColors.GREEN && corJ == MyColors.RED) {
+						robot = new double[5];
+						robot[0] = centers[j].x;
+						robot[1] = imgTemp.rows() + 1 - centers[j].y;
+						robot[2] = centers[i].x;
+						robot[3] = imgTemp.rows() + 1 - centers[i].y;
+						robot[4] = Math.toDegrees(Math.atan2(robot[1] - robot[3], robot[0] - robot[2]));
+						System.out.println("angle robot: " + robot[4]);
+						System.out.println("R(" + robot[0] + "," + robot[1] + "),G(" + robot[2] + "," + robot[3] + ")");
+					} else if (corI == MyColors.BLUE && corJ == MyColors.BLACK) {
+						destination = new double[5];
+						destination[0] = centers[i].x;
+						destination[1] = imgTemp.rows() + 1 - centers[i].y;
+						destination[2] = centers[j].x;
+						destination[3] = imgTemp.rows() + 1 - centers[j].y;
+						destination[4] = Math.toDegrees(
+								Math.atan2(destination[1] - destination[3], destination[0] - destination[2]));
+					} else if (corI == MyColors.BLACK && corJ == MyColors.BLUE) {
+						destination = new double[5];
+						destination[0] = centers[j].x;
+						destination[1] = imgTemp.rows() + 1 - centers[j].y;
+						destination[2] = centers[i].x;
+						destination[3] = imgTemp.rows() + 1 - centers[i].y;
+						destination[4] = Math.toDegrees(
+								Math.atan2(destination[1] - destination[3], destination[0] - destination[2]));
+					}
+				} // System.out.println("robot: "+robot[4]);//System.out.println("dest "+destination[4]);
 			}
 		}
 	}
-	private int color(double[] cor){
+
+	private int color(double[] cor) {
 		double hue = cor[0];
 		double saturation = cor[1];
 		double value = cor[2];
-		if(hue>=0 && hue <10 || hue> 160 && hue <180)
-			return MyColors.RED;//red
-		if(hue>=50 && hue <85)
-			return MyColors.GREEN;//green
-		if(hue>=93 && hue <125)
-			return MyColors.BLUE; //blue
-		if(hue<5 && saturation <5 && value <5)
-			return MyColors.BLACK; //black
+		if (hue >= 0 && hue < 10 || hue > 160 && hue < 180)
+			return MyColors.RED;// red
+		if (hue >= 50 && hue < 85)
+			return MyColors.GREEN;// green
+		if (hue >= 93 && hue < 125)
+			return MyColors.BLUE; // blue
+		if (hue < 5 && saturation < 5 && value < 5)
+			return MyColors.BLACK; // black
 		return MyColors.INDEFINITE;
 	}
-	
 
-
-	private double euclideanDistance(Point a, Point b) {
+	public static double euclideanDistance(Point a, Point b) {
 		double distance = 0.0;
 		try {
 			if (a != null && b != null) {
@@ -105,20 +96,21 @@ public class Angles {
 		}
 		return distance;
 	}
-	
+
 	/**
-	 * [0] x of the center ,
-	 * [1] y of the center ,
-	 * [2] angle
-	 * */
+	 * [0] x of the head , [1] y of the head , [2] x of the tall , [3] y of the
+	 * tall , [4] angle
+	 */
 	public double[] getRobot() {
-		return robot;
+		double [] copy = robot;
+		robot = null;
+		return copy;
 	}
+
 	/**
-	 * [0] x of the center ,
-	 * [1] y of the center ,
-	 * [2] angle
-	 * */
+	 * [0] x of the head , [1] y of the head , [2] x of the tall , [3] y of the
+	 * tall , [4] angle
+	 */
 	public double[] getDestination() {
 		return destination;
 	}
