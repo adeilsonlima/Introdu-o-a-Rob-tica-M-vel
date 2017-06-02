@@ -12,9 +12,6 @@ import javax.swing.JLabel;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
-import org.opencv.core.Scalar;
-import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
 
 import br.ufal.ic.robotica.angles.Angles;
@@ -53,17 +50,19 @@ public class FindPath {
 	private void runMainLoop(String[] args) {
 		imgFrame = new Mat();
 		circles = new HoughCirclesDetection();
-	/*	try {
+		try {
 			ev3 = new RemoteRequestEV3("10.0.1.1");
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		MoveRobot moveRobot = new MoveRobot(ev3);*/
-		MoveRobot moveRobot = new MoveRobot();
+		MoveRobot moveRobot = new MoveRobot(ev3);
+		//MoveRobot moveRobot = new MoveRobot();
 		Angles angles = new Angles();
 		
 		Image tempImage;
-		VideoCapture capture = new VideoCapture("/home/adeilson/Downloads/programaOpencv/robotlocalization.avi");
+		//VideoCapture capture = new VideoCapture("/home/adeilson/Downloads/programaOpencv/quatrocores.avi");
+		VideoCapture capture = new VideoCapture("rtsp://192.168.0.20:554/live1.sdp");
+		double[] destination= null;
 
 		if (capture.isOpened()) {
 			while (true) {
@@ -72,14 +71,16 @@ public class FindPath {
 					Point[] centers = circles.houghCircles(imgFrame);
 					angles.calculaAngulos(centers, imgFrame);
 					double[] robot = angles.getRobot();
-					double[] destination = angles.getDestination();
+					if(destination ==null)
+						destination = angles.getDestination();
 					tempImage = toBufferedImage(imgFrame);
 					ImageIcon imageIcon = new ImageIcon(tempImage, "Captured video");
 					imageLabel.setIcon(imageIcon);
 					frame.pack(); // this will resize the window to fit the
 									// image
-					if(robot!=null){
+					if(robot!=null && destination!=null){
 						moveRobot.move(robot, destination);
+						//System.exit(0);
 					}
 				} else {
 					System.out.println(" -- Frame not captured -- Break!");
@@ -94,7 +95,7 @@ public class FindPath {
 			}
 		} else {
 			System.out.println("Couldn't open capture.");
-		//	moveRobot.stop();
+			moveRobot.stop();
 		}
 	}
 	

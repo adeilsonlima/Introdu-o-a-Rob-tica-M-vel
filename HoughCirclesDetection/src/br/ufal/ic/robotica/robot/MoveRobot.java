@@ -1,9 +1,6 @@
 package br.ufal.ic.robotica.robot;
 
-import java.beans.VetoableChangeListener;
-
 import org.opencv.core.Point;
-
 import br.ufal.ic.robotica.angles.Angles;
 import lejos.remote.ev3.RemoteRequestEV3;
 import lejos.remote.ev3.RemoteRequestPilot;
@@ -30,12 +27,14 @@ public class MoveRobot {
 	 * @param robot array x, y, theta of the robot
 	 * @param destination array x, y, theta of the destination
 	 * */
-	public void move(double[] robot, double[] destination2) {
+	public void move(double[] robot, double[] destination) {
 		try {
+	//		System.out.println("Destino: h("+destination[0]+","+destination[1]+"), t("+destination[2]+","+destination[3]+")");
 
 			//System.out.println("Connected");
 			/*if (!pilot.isMoving()) {
 				pilot.setLinearSpeed(160); // 16cm/s
+				pilot.setAngularSpeed(120);
 			}*/
 			/*if(robot[1] < destination[1]){//robo abaixo do destino
 				double difference = destination[2] - robot[2];System.out.println("diff theta "+difference);
@@ -45,25 +44,28 @@ public class MoveRobot {
 			}*/
 			
 			///TEST
-			double destination[] = new double[5];
+			/*double destination[] = new double[5];
 			destination[X2] = 239.0;
-			destination[Y2] = 207.0;
+			destination[Y2] = 207.0;*/
 			///
-			if(Angles.euclideanDistance(new Point(robot[X1],robot[Y1]), new Point(destination[X2],destination[Y2])) < 10){
+			if(Angles.euclideanDistance(new Point(robot[X1],robot[Y1]), new Point(destination[X1],destination[Y1])) < 10){
 				//TODO
 				System.out.println("Rotação final+stop");
+				pilot.stop();
 			}else{
 				
-				double vectorPathX = destination[X2]-robot[X2];
-				double vectorPathY = destination[Y2]-robot[Y2];
+				double vectorPathX = destination[X1]-robot[X2];
+				double vectorPathY = destination[Y1]-robot[Y2];
 				double vectorRobotX = robot[X1] - robot[X2];
 				double vectorRobotY = robot[Y1] - robot[Y2];
-				//double angle = Math.toDegrees(Math.atan2(vectorPathY - vectorRobotY, vectorPathX - vectorRobotX));
 				
 				double dot = vectorPathX*vectorRobotX + vectorPathY*vectorRobotY;
 				double det = vectorPathX*vectorRobotY - vectorPathY*vectorRobotX;
 				double angle = Math.toDegrees(Math.atan2(det, dot));
 				System.out.println("angle to path: "+angle);
+				pilot.rotate(-angle);
+				pilot.forward();
+				Delay.msDelay(500);
 			}
 
 			// pilot.travel(distance);

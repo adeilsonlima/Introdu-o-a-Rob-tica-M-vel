@@ -15,7 +15,7 @@ public class HoughCirclesDetection {
 		double minDist = 10;// (double)src_gray.rows()/8;
 		// If unknown the min and max radius, put zero as default.
 		int minRadius = 5, maxRadius = 10;
-		Imgproc.HoughCircles(src_gray, circles, Imgproc.HOUGH_GRADIENT, 1.0, minDist, 67.0, 22.0, minRadius, maxRadius);// 70,20
+		Imgproc.HoughCircles(src_gray, circles, Imgproc.HOUGH_GRADIENT, 1.0, minDist, 64.0, 19.0, minRadius, maxRadius);// 70,20
 
 		Point[] centers = new Point[circles.cols()];
 
