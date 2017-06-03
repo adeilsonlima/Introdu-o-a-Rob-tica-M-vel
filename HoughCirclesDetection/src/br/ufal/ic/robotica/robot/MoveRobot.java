@@ -1,7 +1,10 @@
 package br.ufal.ic.robotica.robot;
 
+import java.io.IOException;
+
 import org.opencv.core.Point;
-import br.ufal.ic.robotica.angles.Angles;
+
+import br.ufal.ic.robotica.centros.Centers;
 import lejos.remote.ev3.RemoteRequestEV3;
 import lejos.remote.ev3.RemoteRequestPilot;
 import lejos.utility.Delay;
@@ -13,42 +16,30 @@ public class MoveRobot {
 	private static int X2 = 2;
 	private static int Y2 = 3;
 	
-
-	public MoveRobot(RemoteRequestEV3 ev3) {
-		pilot = (RemoteRequestPilot) ev3.createPilot(56, 120, "B", "C");
+	public MoveRobot(){
+		RemoteRequestEV3 ev3;
+		try {
+			ev3 = new RemoteRequestEV3("10.0.1.1");
+			pilot = (RemoteRequestPilot) ev3.createPilot(56, 120, "B", "C");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
 	}
 	
-	//DELETAR
-	public MoveRobot(){
-		
-	}
+	public void drive() {
+		pilot.setLinearSpeed(160);
+		pilot.setAngularSpeed(120);
+      //  pilot.forward();
+    }
 
 	/**
-	 * @param robot array x, y, theta of the robot
-	 * @param destination array x, y, theta of the destination
+	 * @param centers Objeto que possue as posicoes do robo e do destino
 	 * */
-	public void move(double[] robot, double[] destination) {
+	public void move(Centers centers) {
+		double[] robot = centers.getRobot();
+		double[] destination = centers.getDestination();
 		try {
-	//		System.out.println("Destino: h("+destination[0]+","+destination[1]+"), t("+destination[2]+","+destination[3]+")");
-
-			//System.out.println("Connected");
-			/*if (!pilot.isMoving()) {
-				pilot.setLinearSpeed(160); // 16cm/s
-				pilot.setAngularSpeed(120);
-			}*/
-			/*if(robot[1] < destination[1]){//robo abaixo do destino
-				double difference = destination[2] - robot[2];System.out.println("diff theta "+difference);
-				if(Math.abs(difference) >10){
-					
-				}
-			}*/
-			
-			///TEST
-			/*double destination[] = new double[5];
-			destination[X2] = 239.0;
-			destination[Y2] = 207.0;*/
-			///
-			if(Angles.euclideanDistance(new Point(robot[X1],robot[Y1]), new Point(destination[X1],destination[Y1])) < 10){
+			if(Centers.euclideanDistance(new Point(robot[X1],robot[Y1]), new Point(destination[X1],destination[Y1])) < 10){
 				//TODO
 				System.out.println("Rotação final+stop");
 				pilot.stop();
@@ -65,15 +56,10 @@ public class MoveRobot {
 				System.out.println("angle to path: "+angle);
 				pilot.rotate(-angle);
 				pilot.forward();
-				Delay.msDelay(500);
+			//	Delay.msDelay(500);
 			}
-
-			// pilot.travel(distance);
-			// pilot.rotate(angle);
-
-			// Delay.msDelay(2000);
 		} catch (Exception e) {
-			System.out.println("Error: " + e.getMessage());
+			System.out.println("Error!");
 			e.printStackTrace();
 		}
 

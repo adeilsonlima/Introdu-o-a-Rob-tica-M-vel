@@ -1,4 +1,4 @@
-package br.ufal.ic.robotica.cluster;
+package br.ufal.ic.robotica.camera;
 
 public class MyColors {
 	public static int RED = 0;

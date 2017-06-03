@@ -1,29 +1,31 @@
-package br.ufal.ic.robotica.angles;
+package br.ufal.ic.robotica.centros;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-import br.ufal.ic.robotica.cluster.MyColors;
+import br.ufal.ic.robotica.camera.MyColors;
 
-public class Angles {
+public class Centers {
 	private double[] robot;// position, orientation
 	private double[] destination;
+	
+	public Centers(){
+		destination = null;
+	}
 
-	public void calculaAngulos(Point[] centers, Mat imgFrame) {
+	public void calculaCentros(Point[] centers, Mat imgFrame) {
 
 		Mat imgTemp = new Mat();
 		imgFrame.copyTo(imgTemp);
 		Imgproc.cvtColor(imgTemp, imgTemp, Imgproc.COLOR_BGR2HSV);
 		for (int i = 0; i < centers.length - 1; ++i) {
 			double[] intensityI = imgTemp.get((int) centers[i].y, (int) centers[i].x);
-			if (color(intensityI) == MyColors.BLUE) {
-				destination = new double[3];
+			if (color(intensityI) == MyColors.BLUE && destination==null) {
+				destination = new double[2];
 				destination[0] = centers[i].x;
 				destination[1] = imgTemp.rows() + 1 - centers[i].y;
-				destination[2] = Math.toDegrees(// angulo com eixo X TODO
-						Math.atan2(destination[1] - destination[1], destination[0] - destination[0] + 15));
 			}
 
 			for (int j = i + 1; j < centers.length; ++j) {
@@ -37,29 +39,20 @@ public class Angles {
 					int corJ = color(intensityJ);
 
 					if (corI == MyColors.RED && corJ == MyColors.GREEN) {
-						robot = new double[5];
+						robot = new double[4];
 						robot[0] = centers[i].x;
 						robot[1] = imgTemp.rows() + 1 - centers[i].y;
 						robot[2] = centers[j].x;
 						robot[3] = imgTemp.rows() + 1 - centers[j].y;
-						robot[4] = Math.toDegrees(Math.atan2(robot[1] - robot[3], robot[0] - robot[2]));
-						// System.out.println("angle robot: " + robot[4]);
-						// System.out.println("R(" + robot[0] + "," + robot[1] +
-						// "),G(" + robot[2] + "," + robot[3] + ")");
 					} else if (corI == MyColors.GREEN && corJ == MyColors.RED) {
-						robot = new double[5];
+						robot = new double[4];
 						robot[0] = centers[j].x;
 						robot[1] = imgTemp.rows() + 1 - centers[j].y;
 						robot[2] = centers[i].x;
 						robot[3] = imgTemp.rows() + 1 - centers[i].y;
-						robot[4] = Math.toDegrees(Math.atan2(robot[1] - robot[3], robot[0] - robot[2]));
-						// System.out.println("angle robot: " + robot[4]);
-						// System.out.println("R(" + robot[0] + "," + robot[1] +
-						// "),G(" + robot[2] + "," + robot[3] + ")");
 					}
 				}
-			} // System.out.println("robot:
-				// "+robot[4]);//System.out.println("dest "+destination[4]);
+			}
 		}
 	}
 
@@ -91,16 +84,14 @@ public class Angles {
 
 	/**
 	 * [0] x of the head , [1] y of the head , [2] x of the tall , [3] y of the
-	 * tall , [4] angle
+	 * tall
 	 */
 	public double[] getRobot() {
-		double[] copy = robot;
-		robot = null;
-		return copy;
+		return robot;
 	}
 
 	/**
-	 * [0] x of the head , [1] y of the head , [2] angle
+	 * [0] x of the head , [1] y of the head
 	 */
 	public double[] getDestination() {
 		return destination;
