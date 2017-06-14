@@ -6,14 +6,15 @@ import org.opencv.videoio.VideoCapture;
 
 import br.ufal.ic.robotica.centros.Centers;
 
-public class Camera {
+public class Camera extends Thread {
 
 	private final VideoCapture capture;
 	private final Mat imgFrame = new Mat();
 	private final HoughCirclesDetection circles;
 
 	public Camera() {
-		//capture = new VideoCapture("/home/adeilson/Downloads/programaOpencv/quatrocores.avi");
+		// capture = new
+		// VideoCapture("/home/adeilson/Downloads/programaOpencv/quatrocores.avi");
 		capture = new VideoCapture("rtsp://192.168.0.20:554/live1.sdp");
 		circles = new HoughCirclesDetection();
 	}
@@ -27,19 +28,31 @@ public class Camera {
 			return null;
 		}
 
-		capture.read(imgFrame);
+		// capture.read(imgFrame);
 
-	//	if (!imgFrame.empty()) {
-			Centers coresCentros = new Centers();
-			Point[] centers = circles.houghCircles(imgFrame);
-			coresCentros.calculaCentros(centers, imgFrame);
-			double[] robot = coresCentros.getRobot();
-			double[] destination = coresCentros.getDestination();
+		// if (!imgFrame.empty()) {
+		Centers coresCentros = new Centers();
+		Point[] centers = circles.houghCircles(imgFrame);
+		coresCentros.calculaCentros(centers, imgFrame);
+		double[] robot = coresCentros.getRobot();
+		double[] destination = coresCentros.getDestination();
 
-			if (robot != null && destination != null) {
-				return coresCentros;
-			}
-	//	}
+		if (robot != null && destination != null) {
+			return coresCentros;
+		}
+		// }
 		return null;
+	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		while (true) {
+			if (capture.isOpened()) {
+				capture.read(imgFrame);
+				System.out.println("Leu imagem");
+			}
+		}
+
 	}
 }

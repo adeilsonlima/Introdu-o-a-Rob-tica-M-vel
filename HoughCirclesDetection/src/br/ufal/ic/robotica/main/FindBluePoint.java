@@ -13,13 +13,14 @@ public class FindBluePoint {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
 		Camera camera = new Camera();
+		camera.start();
 		System.out.println("camera started");
 
 		MoveRobot pilot = new MoveRobot();
 		pilot.drive();
 		System.out.println("Pilot started");
 
-		while (Button.ESCAPE.isUp()) {
+		while (pilot.isMoving()) {
 			long timer = System.currentTimeMillis();
 			Centers centers = camera.getCenters();
 			if (centers != null) {
@@ -35,8 +36,10 @@ public class FindBluePoint {
 			}
 		}
 
-		pilot.stop();
+		//pilot.stop();
 		camera.close();
+		
+		System.exit(0);
 
 	}
 }

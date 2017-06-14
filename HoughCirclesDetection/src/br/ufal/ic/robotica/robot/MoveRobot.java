@@ -15,48 +15,60 @@ public class MoveRobot {
 	private static int Y1 = 1;
 	private static int X2 = 2;
 	private static int Y2 = 3;
-	
-	public MoveRobot(){
+	private boolean isMoving = false;
+
+	public MoveRobot() {
 		RemoteRequestEV3 ev3;
 		try {
 			ev3 = new RemoteRequestEV3("10.0.1.1");
 			pilot = (RemoteRequestPilot) ev3.createPilot(56, 120, "B", "C");
+			isMoving = true;
 		} catch (IOException e) {
 			e.printStackTrace();
-		}		
+		}
 	}
-	
+
 	public void drive() {
 		pilot.setLinearSpeed(160);
 		pilot.setAngularSpeed(120);
-      //  pilot.forward();
-    }
+		// pilot.forward();
+	}
 
 	/**
-	 * @param centers Objeto que possue as posicoes do robo e do destino
-	 * */
+	 * @param centers
+	 *            Objeto que possue as posicoes do robo e do destino
+	 */
 	public void move(Centers centers) {
 		double[] robot = centers.getRobot();
 		double[] destination = centers.getDestination();
 		try {
-			if(Centers.euclideanDistance(new Point(robot[X1],robot[Y1]), new Point(destination[X1],destination[Y1])) < 10){
-				//TODO
+			double distance = Centers.euclideanDistance(new Point(robot[X1], robot[Y1]),
+					new Point(destination[X1], destination[Y1]));
+			System.out.println("distancia: "+distance);
+			if (distance < 40) {
+				// TODO
 				System.out.println("Rotação final+stop");
-				pilot.stop();
-			}else{
-				
-				double vectorPathX = destination[X1]-robot[X2];
-				double vectorPathY = destination[Y1]-robot[Y2];
+				//pilot.rotate(90);
+				pilot.travel(-distance);
+				this.stop();
+			} else {
+
+				double vectorPathX = destination[X1] - robot[X2];
+				double vectorPathY = destination[Y1] - robot[Y2];
 				double vectorRobotX = robot[X1] - robot[X2];
 				double vectorRobotY = robot[Y1] - robot[Y2];
-				
-				double dot = vectorPathX*vectorRobotX + vectorPathY*vectorRobotY;
-				double det = vectorPathX*vectorRobotY - vectorPathY*vectorRobotX;
+
+				double dot = vectorPathX * vectorRobotX + vectorPathY * vectorRobotY;
+				double det = vectorPathX * vectorRobotY - vectorPathY * vectorRobotX;
 				double angle = Math.toDegrees(Math.atan2(det, dot));
-				System.out.println("angle to path: "+angle);
-				pilot.rotate(-angle);
-				pilot.forward();
-			//	Delay.msDelay(500);
+				System.out.println("angulo: (" + angle + ")");
+				if (Math.abs(angle) > 8) {
+					pilot.rotate(-angle);
+					pilot.forward();
+				}
+				// Thread.yield();
+				// pilot.travel(100);
+				// Delay.msDelay(2000);
 			}
 		} catch (Exception e) {
 			System.out.println("Error!");
@@ -64,12 +76,18 @@ public class MoveRobot {
 		}
 
 	}
-/**
- * Stop the robot, and close the conection with the Ev3
- * */
+
+	/**
+	 * Stop the robot, and close the conection with the Ev3
+	 */
 	public void stop() {
 		pilot.stop();
 		pilot.close();
+		this.isMoving = false;
+	}
+
+	public boolean isMoving() {
+		return isMoving;
 	}
 
 }
