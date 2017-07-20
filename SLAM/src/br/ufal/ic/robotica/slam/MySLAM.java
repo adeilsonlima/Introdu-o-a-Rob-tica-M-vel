@@ -22,7 +22,7 @@ import lejos.remote.ev3.RemoteRequestEV3;
 import lejos.remote.ev3.RemoteRequestPilot;
 import lejos.robotics.RegulatedMotor;
 
-public class ShowMap {
+public class MySLAM {
 	static {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 	}
@@ -41,7 +41,7 @@ public class ShowMap {
 	};
 
 	public static void main(String[] args) {
-		ShowMap app = new ShowMap();
+		MySLAM app = new MySLAM();
 		app.initGUI();
 
 		try {
@@ -86,66 +86,109 @@ public class ShowMap {
 		Image tempImage;
 		Direction directionRobot = Direction.GO;
 		Point positionRobot = new Point(20, 0);// posicao inicial
-		float armAngle = 180;// virado para esquerda
+		float armAngle = 90;// virado para frente
 		int imax = 6;
 		int angle = 180 / imax;
+		float[] distanceFront;
 
 		while (true) {
-			arm.rotate(-90);// frente
-			distance = distanceProvider.fetchSample();
-			if (distance[0] * 100 < 20) {// girar para direita
-				if (directionRobot == Direction.GO) {
-					arm.rotate(-90);// direita
+			if (directionRobot == Direction.GO) {
+				distanceFront = distanceProvider.fetchSample();
+				System.out.println("Distance: " + distanceFront[0]);
+
+				// gira o sensor para direita
+				arm.rotate(-90 - angle);
+				armAngle -= 90 - angle;
+
+				for (int i = 0; i <= imax; ++i) {
+					armAngle += angle;
+					arm.rotate(angle);
 					distance = distanceProvider.fetchSample();
-					if (distance[0] < 30) {
-						pilot.rotate(90);
+					System.out.println("distancia " + armAngle + "° =" + distance[0]);
+
+					if (distance[0] < 1.5) {// 1.5m
+						imgFrame.put((int) (positionRobot.y + distance[0] * 100 * Math.sin(armAngle)),
+								(int) (positionRobot.x + distance[0] * 100 * Math.cos(armAngle)), VMAX);
+					}
+					tempImage = toBufferedImage(imgFrame);
+					ImageIcon imageIcon = new ImageIcon(tempImage, "map");
+					imageLabel.setIcon(imageIcon);
+					frame.pack(); // this will resize the window to fit the
+									// image
+				}
+				if (distanceFront[0] > 0.30) {
+					pilot.travel(100);// 10cm para frente
+					positionRobot.y += 10;
+					arm.rotate(-90);// 180 -> 90
+					armAngle = 90;
+				} else {// turn to right
+					arm.rotate(-180);// 180 -> 0
+					armAngle = 0;
+					distance = distanceProvider.fetchSample();
+					if (distance[0] > 0.30) {
+						pilot.rotate(-90);
 						pilot.travel(200);// 20cm para direita
-						pilot.rotate(90);
+						pilot.rotate(-90);
 						positionRobot.x += 20;
 						directionRobot = Direction.BACK;
-						armAngle = 180;
+						arm.rotate(90);
+						armAngle = 90;
 					} else {
 						System.out.println("The End");
-						System.exit(0);
-					}
-				} else {// voltando
-					arm.rotate(90);
-					distance = distanceProvider.fetchSample();
-					if (distance[0] < 30) {
-						pilot.rotate(-90);
-						pilot.travel(200);// 20cm para direita
-						pilot.rotate(-90);
-						positionRobot.x += 20;
-						directionRobot = Direction.GO;
-						armAngle = 0;
-						arm.rotate(-180);
-					} else {
-						System.out.println("The End");
-						System.exit(0);
+						break;
+						// System.exit(0);
 					}
 				}
 
-			} else {
-				pilot.travel(200);// 20cm para frente
-				arm.rotate(-90);
-				if (directionRobot == Direction.GO)
-					positionRobot.y += 20;
-				else
-					positionRobot.y -= 20;
-			}
-			for (int i = 0; i < imax; ++i) {
-				distance = distanceProvider.fetchSample();
-				imgFrame.put((int) (positionRobot.y + distance[0] * 100 * Math.sin(armAngle)),
-						(int) (positionRobot.x + distance[0] * 100 * Math.sin(armAngle)), VMAX);
-				tempImage = toBufferedImage(imgFrame);
-				ImageIcon imageIcon = new ImageIcon(tempImage, "map");
-				imageLabel.setIcon(imageIcon);
-				frame.pack(); // this will resize the window to fit the image
+			} else {// Direction.BACK
+				distanceFront = distanceProvider.fetchSample();
+				System.out.println("Distance: " + distanceFront[0]);
 
-				armAngle += angle;
-				arm.rotate(angle);
+				// gira o sensor para direita
+				arm.rotate(90 + angle);
+				armAngle -= 90 - angle;
+
+				for (int i = 0; i <= imax; ++i) {
+					armAngle += angle;
+					arm.rotate(-angle);
+					distance = distanceProvider.fetchSample();
+					System.out.println("distancia " + armAngle + "° =" + distance[0]);
+
+					if (distance[0] < 1.5) {// 1.5m
+						imgFrame.put((int) (positionRobot.y + distance[0] * 100 * Math.sin(-armAngle)),
+								(int) (positionRobot.x + distance[0] * 100 * Math.cos(armAngle)), VMAX);
+					}
+					tempImage = toBufferedImage(imgFrame);
+					ImageIcon imageIcon = new ImageIcon(tempImage, "map");
+					imageLabel.setIcon(imageIcon);
+					frame.pack(); // this will resize the window to fit the
+									// image
+				}
+				if (distanceFront[0] > 0.30) {
+					pilot.travel(100);// 10cm para frente
+					positionRobot.y -= 10;
+					arm.rotate(-90);// 180 -> 90
+					armAngle = 90;
+				} else {// turn to right
+					arm.rotate(180);// 180 -> 0
+					armAngle = 0;
+					distance = distanceProvider.fetchSample();
+					if (distance[0] > 0.30) {
+						pilot.rotate(90);
+						pilot.travel(200);// 20cm para direita
+						pilot.rotate(90);
+						positionRobot.x += 20;
+						directionRobot = Direction.GO;
+						arm.rotate(-90);
+						armAngle = 90;
+					} else {
+						System.out.println("The End");
+						break;
+						// System.exit(0);
+					}
+				}
 			}
-			arm.rotate(-180);
+
 		}
 	}
 
